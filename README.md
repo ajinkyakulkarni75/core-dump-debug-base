@@ -8,7 +8,7 @@ This directory contains code which can be used as a base code to debug the core 
 * `php`: version 8.3.7
 * `OS` : Docker / Apache on Linux
 * `google/cloud-firestore` : version 1.47.3
-* `grpc` 1.69.0
+* `grpc` : version 1.69.0
 
 ### Setup
 
@@ -20,17 +20,26 @@ $ cd core-dump-debug-base
 ```
 ### Copy default credentials file
 
-After cloning the core-dump-base repo check the local credentials file and copy that into the [/app](https://github.com/ajinkyakulkarni75/core-dump-debug-base/tree/main/app) folder. Also make sure you have a [CGP Project](https://pantheon.corp.google.com/) and firestore database named firestore `firestore-mock` is created along with the collection with collection ID `schedules`.
+After cloning the core-dump-base repo check the local credentials file, copy that into the [/app](https://github.com/ajinkyakulkarni75/core-dump-debug-base/tree/main/app) folder and rename the credential file to `application_default_credentials.json`. Also make sure you have a [GCP Project](https://pantheon.corp.google.com/) and firestore database named `firestore-mock` is created along with the collection with collection ID `schedules`.
+
+### Set the kernel global configuration
+
+Run the below command on you host machine (outside docker) 
+
+```sh
+$ sudo sh -c 'echo "/tmp/core.%e.%p" > /proc/sys/kernel/core_pattern'
+```
+
 
 ### Build and run using docker file
 
 Build the docker container and run the container to open a docker container shell
 
 ```sh
-$ sudo sh -c 'echo "/tmp/core.%e.%p" > /proc/sys/kernel/core_pattern'
 $ docker build -t firestore-grpc-new . 
 $ docker run -it --ulimit core=-1 --security-opt seccomp=unconfined -v /tmp:/tmp -v "$(pwd)/logs/":/var/log/mylogs/ --entrypoint bash firestore-grpc-new
 ```
+
 
 ### Run PHP Script
 
@@ -38,7 +47,7 @@ Once inside the container shell check the grpc installation version and then run
 
 ```sh
 $ php -i | grep grpc
-$ php /var/www/html/index.php 2> /var/log/mylogs/grpc.log\
+$ php /var/www/html/index.php 2> /var/log/mylogs/grpc.log
 ```
 
 ### Check core dump file and debug using gdb tool
